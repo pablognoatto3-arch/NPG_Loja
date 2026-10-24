@@ -11,7 +11,7 @@
   <!-- Estilos CSS -->
   <link rel="stylesheet" href="style.css">
   
-  <!-- Biblioteca Chart.js para os gráficos do painel -->
+  <!-- Biblioteca Chart.js para os gráficos -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
@@ -33,7 +33,7 @@
       <button onclick="mudarSecao('fornecedores', this)">🏭 <span class="nav-text">Fornecedores</span></button>
       <button onclick="mudarSecao('reservas', this)">📌 <span class="nav-text">Reservas</span></button>
       <button onclick="mudarSecao('perdas', this)">⚠️ <span class="nav-text">Perdas</span></button>
-      <button onclick="mudarSecao('relatorios', this)">📑 <span class="nav-text">Relatório / DRE</span></button>
+      <button onclick="mudarSecao('relatorios', this)">📑 <span class="nav-text">Relatório / Backup</span></button>
     </nav>
   </aside>
 
@@ -59,7 +59,7 @@
             <div class="chart"><canvas id="graficoVendas"></canvas></div>
           </div>
           <div class="box">
-            <h2>Top Produtos</h2>
+            <h2>Top Produtos em Estoque</h2>
             <div class="chart"><canvas id="graficoProdutos"></canvas></div>
           </div>
         </div>
@@ -128,21 +128,69 @@
         </div>
       </section>
 
-      <!-- Demais Seções do Sistema -->
-      <section id="vendas"><div class="box"><h2>Registar Venda</h2></div></section>
-      <section id="compras"><div class="box"><h2>Registar Compra</h2></div></section>
-      <section id="despesas"><div class="box"><h2>Registar Despesa</h2></div></section>
-      <section id="clientes"><div class="box"><h2>Gestão de Clientes</h2></div></section>
-      <section id="fornecedores"><div class="box"><h2>Gestão de Fornecedores</h2></div></section>
-      <section id="reservas"><div class="box"><h2>Gestão de Reservas</h2></div></section>
-      <section id="perdas"><div class="box"><h2>Registo de Perdas</h2></div></section>
+      <!-- Seção: Vendas -->
+      <section id="vendas">
+        <div class="box">
+          <h2>Registar Venda</h2>
+          <p class="vazio">Módulo de vendas pronto para integração de registo de saídas.</p>
+        </div>
+      </section>
+
+      <!-- Seção: Compras -->
+      <section id="compras">
+        <div class="box">
+          <h2>Registar Compra</h2>
+          <p class="vazio">Módulo de compras para reposição de stock.</p>
+        </div>
+      </section>
+
+      <!-- Seção: Despesas -->
+      <section id="despesas">
+        <div class="box">
+          <h2>Registar Despesa</h2>
+          <p class="vazio">Módulo de controlo de gastos operacionais.</p>
+        </div>
+      </section>
+
+      <!-- Seção: Clientes -->
+      <section id="clientes">
+        <div class="box">
+          <h2>Gestão de Clientes</h2>
+          <p class="vazio">Registo de contactos e histórico de compras dos clientes.</p>
+        </div>
+      </section>
+
+      <!-- Seção: Fornecedores -->
+      <section id="fornecedores">
+        <div class="box">
+          <h2>Gestão de Fornecedores</h2>
+          <p class="vazio">Registo de fornecedores de pedras e minerais.</p>
+        </div>
+      </section>
+
+      <!-- Seção: Reservas -->
+      <section id="reservas">
+        <div class="box">
+          <h2>Gestão de Reservas</h2>
+          <p class="vazio">Controlo de peças separadas ou reservadas por clientes.</p>
+        </div>
+      </section>
+
+      <!-- Seção: Perdas -->
+      <section id="perdas">
+        <div class="box">
+          <h2>Registo de Perdas</h2>
+          <p class="vazio">Registo de quebras ou perdas de inventário.</p>
+        </div>
+      </section>
       
       <!-- Seção: Relatórios e Backup -->
       <section id="relatorios">
         <div class="box">
           <h2>Relatório e Sincronização de Dados</h2>
+          <p>Faça o backup regular dos seus dados para evitar perdas ou sincronizar entre dispositivos.</p>
           <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
-            <button class="btn" onclick="baixarBackup()">Baixar backup</button>
+            <button class="btn" onclick="baixarBackup()">Baixar backup (JSON)</button>
             <label class="btn sec" style="cursor:pointer; margin:0; display:inline-flex; align-items:center;">
               Restaurar backup <input type="file" id="inputBackup" style="display:none" onchange="restaurarBackup(event)">
             </label>

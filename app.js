@@ -1,158 +1,281 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NPG - Gestão de Pedras Naturais</title>
+// Utilitário de seleção rápida
+const $ = id => document.getElementById(id);
+
+// Estrutura de dados principal carregada do localStorage ou inicializada
+let db = JSON.parse(localStorage.getItem('npg_loja_db')) || {
+  produtos: [],
+  vendas: [],
+  compras: [],
+  despesas: [],
+  clientes: [],
+  fornecedores: [],
+  reservas: [],
+  perdas: []
+};
+
+let editProdId = null;
+let fotoNova = '';
+let graficoVendasInstancia = null;
+let graficoProdutosInstancia = null;
+
+// Gravar no localStorage
+function salvarDB() {
+  localStorage.setItem('npg_loja_db', JSON.stringify(db));
+  atualizarDashboard();
+}
+
+// Controlo do Menu Lateral
+function toggleSidebar() {
+  const sidebar = $('sidebar');
+  if (sidebar) sidebar.classList.toggle('recolhido');
+}
+
+// Navegação entre seções
+function mudarSecao(secaoId, botaoEl) {
+  document.querySelectorAll('main section').forEach(sec => sec.classList.remove('on'));
+  const alvo = $(secaoId);
+  if (alvo) alvo.classList.add('on');
+
+  document.querySelectorAll('aside nav button').forEach(btn => btn.classList.remove('on'));
+  if (botaoEl) botaoEl.classList.add('on');
+
+  const tituloPagina = $('titulo-pagina');
+  if (tituloPagina && botaoEl) {
+    tituloPagina.textContent = botaoEl.textContent.replace(/[^a-zA-ZÀ-ÿ0-9\s]/g, '').trim();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Se entrar no dashboard, atualiza os gráficos
+  if (secaoId === 'dashboard') {
+    atualizarDashboard();
+  }
+}
+
+// ==========================================
+// 1. GESTÃO DE PRODUTOS
+// ==========================================
+function resetFormProd() {
+  editProdId = null;
+  const fProd = $('fProd');
+  if (fProd) fProd.reset();
+  if ($('prMinimo')) $('prMinimo').value = 2;
+  if ($('prEstoque')) $('prEstoque').value = 0;
+  if ($('tituloFormProd')) $('tituloFormProd').textContent = 'Novo Produto';
+  if ($('btnSalvarProd')) $('btnSalvarProd').textContent = 'Salvar produto';
+  if ($('btnCancelarProd')) $('btnCancelarProd').style.display = 'none';
+}
+
+const fProdEl = $('fProd');
+if (fProdEl) {
+  fProdEl.onsubmit = e => {
+    e.preventDefault();
+    const nome = $('prNome').value.trim();
+    const tipo = $('prTipo').value.trim();
+    const preco = +$('prPreco').value || 0;
+    const precoOnline = +$('prPrecoOnline').value || 0;
+    const minimo = +$('prMinimo').value || 0;
+    const unica = $('prUnica').checked;
+    const estoqueInicial = +$('prEstoque').value || 0;
+
+    if (editProdId) {
+      const p = db.produtos.find(x => x.id === editProdId);
+      if (p) {
+        p.nome = nome;
+        p.tipo = tipo;
+        p.preco = preco;
+        p.precoOnline = precoOnline;
+        p.minimo = minimo;
+        p.unica = unica;
+        if (fotoNova) p.foto = fotoNova;
+      }
+    } else {
+      const novoProduto = {
+        id: Date.now(),
+        nome,
+        tipo,
+        preco,
+        precoOnline,
+        minimo,
+        unica,
+        estoque: estoqueInicial,
+        foto: fotoNova || ''
+      };
+      db.produtos.push(novoProduto);
+    }
+
+    salvarDB();
+    atualizarTabelaProdutos();
+    resetFormProd();
+  };
+}
+
+const btnCancelarProd = $('btnCancelarProd');
+if (btnCancelarProd) btnCancelarProd.onclick = resetFormProd;
+
+function atualizarTabelaProdutos() {
+  const tbody = $('tabelaProdutos');
+  if (!tbody) return;
+
+  const termoFiltro = $('filtroProdNome') ? $('filtroProdNome').value.toLowerCase() : '';
+  const produtosFiltrados = db.produtos.filter(p => p.nome.toLowerCase().includes(termoFiltro));
+
+  if (produtosFiltrados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="vazio">Nenhum produto encontrado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = produtosFiltrados.map(p => `
+    <tr>
+      <td>${p.foto ? `<img src="${p.foto}" class="thumb">` : `<div class="sem">Sem foto</div>`}</td>
+      <td><b>${p.nome}</b></td>
+      <td>${p.tipo || '-'}</td>
+      <td class="n">${p.preco.toFixed(2)} €</td>
+      <td class="n">${p.precoOnline ? p.precoOnline.toFixed(2) + ' €' : '-'}</td>
+      <td class="n"><b>${p.estoque}</b></td>
+      <td>
+        <button class="btn x" onclick="editarProduto(${p.id})">Editar</button>
+        <button class="btn x" onclick="eliminarProduto(${p.id})" style="color:var(--vermelho)">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+const filtroProdNome = $('filtroProdNome');
+if (filtroProdNome) filtroProdNome.oninput = atualizarTabelaProdutos;
+
+function editarProduto(id) {
+  const p = db.produtos.find(x => x.id === id);
+  if (!p) return;
+
+  editProdId = p.id;
+  $('prNome').value = p.nome;
+  $('prTipo').value = p.tipo || '';
+  $('prPreco').value = p.preco;
+  $('prPrecoOnline').value = p.precoOnline || '';
+  $('prMinimo').value = p.minimo || 2;
+  $('prEstoque').value = p.estoque;
+  $('prUnica').checked = !!p.unica;
+
+  if ($('tituloFormProd')) $('tituloFormProd').textContent = 'Editar Produto';
+  if ($('btnSalvarProd')) $('btnSalvarProd').textContent = 'Atualizar produto';
+  if ($('btnCancelarProd')) $('btnCancelarProd').style.display = 'inline-flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function eliminarProduto(id) {
+  if (confirm('Tem certeza de que pretende eliminar este produto?')) {
+    db.produtos = db.produtos.filter(x => x.id !== id);
+    salvarDB();
+    atualizarTabelaProdutos();
+  }
+}
+
+// ==========================================
+// 2. DASHBOARD E GRÁFICOS (CHART.JS)
+// ==========================================
+function atualizarDashboard() {
+  // Calcular KPIs
+  const totalFaturamento = db.vendas.reduce((acc, v) => acc + (v.total || 0), 0);
+  const totalDespesas = db.despesas.reduce((acc, d) => acc + (d.valor || 0), 0);
+  const totalCompras = db.compras.reduce((acc, c) => acc + (c.total || 0), 0);
   
-  <!-- Favicon / Ícone do Site -->
-  <link rel="icon" type="image/png" href="logo.png">
-  
-  <!-- Estilos CSS -->
-  <link rel="stylesheet" href="style.css">
-  
-  <!-- Biblioteca Chart.js para os gráficos do painel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-</head>
-<body>
+  // Lucro Bruto simulado (Faturamento - Custo de Compras proporcional ou estimado, ex: 50% ou direto)
+  const lucroBruto = totalFaturamento * 0.4; // Exemplo de margem estimada ou cálculo real se associado a compras
+  const saldoFinal = totalFaturamento - totalDespesas - totalCompras;
 
-  <!-- Menu Lateral de Navegação -->
-  <aside id="sidebar">
-    <div class="sidebar-header">
-      <h2>NPG Pedras</h2>
-      <p>Gestão de Loja</p>
-    </div>
-    <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Menu</button>
-    <nav>
-      <button class="on" onclick="mudarSecao('dashboard', this)">📊 <span class="nav-text">Dashboard</span></button>
-      <button onclick="mudarSecao('produtos', this)">💎 <span class="nav-text">Produtos</span></button>
-      <button onclick="mudarSecao('vendas', this)">🛒 <span class="nav-text">Vendas</span></button>
-      <button onclick="mudarSecao('compras', this)">📦 <span class="nav-text">Compras</span></button>
-      <button onclick="mudarSecao('despesas', this)">💸 <span class="nav-text">Despesas</span></button>
-      <button onclick="mudarSecao('clientes', this)">👥 <span class="nav-text">Clientes</span></button>
-      <button onclick="mudarSecao('fornecedores', this)">🏭 <span class="nav-text">Fornecedores</span></button>
-      <button onclick="mudarSecao('reservas', this)">📌 <span class="nav-text">Reservas</span></button>
-      <button onclick="mudarSecao('perdas', this)">⚠️ <span class="nav-text">Perdas</span></button>
-      <button onclick="mudarSecao('relatorios', this)">📑 <span class="nav-text">Relatório / DRE</span></button>
-    </nav>
-  </aside>
+  if ($('kpi-fat')) $('kpi-fat').textContent = totalFaturamento.toFixed(2) + ' €';
+  if ($('kpi-lucro')) $('kpi-lucro').textContent = lucroBruto.toFixed(2) + ' €';
+  if ($('kpi-despesa')) $('kpi-despesa').textContent = totalDespesas.toFixed(2) + ' €';
+  if ($('kpi-saldo')) $('kpi-saldo').textContent = saldoFinal.toFixed(2) + ' €';
 
-  <!-- Estrutura Principal -->
-  <div class="main-wrapper">
-    <header>
-      <h1 id="titulo-pagina">Dashboard</h1>
-      <p>Controlo operacional e financeiro do negócio</p>
-    </header>
+  renderizarGraficos();
+}
 
-    <main>
-      <!-- Seção: Dashboard -->
-      <section id="dashboard" class="on">
-        <div class="stats">
-          <div class="stat"><span>Faturamento</span><b id="kpi-fat">0,00 €</b></div>
-          <div class="stat"><span>Lucro Bruto</span><b id="kpi-lucro">0,00 €</b></div>
-          <div class="stat"><span>Despesas</span><b id="kpi-despesa">0,00 €</b></div>
-          <div class="stat lucro"><span>Saldo Final</span><b id="kpi-saldo">0,00 €</b></div>
-        </div>
-        <div class="grid2">
-          <div class="box">
-            <h2>Vendas por Período</h2>
-            <div class="chart"><canvas id="graficoVendas"></canvas></div>
-          </div>
-          <div class="box">
-            <h2>Top Produtos</h2>
-            <div class="chart"><canvas id="graficoProdutos"></canvas></div>
-          </div>
-        </div>
-      </section>
+function renderizarGraficos() {
+  // Gráfico de Vendas
+  const ctxVendas = $('graficoVendas');
+  if (ctxVendas) {
+    if (graficoVendasInstancia) graficoVendasInstancia.destroy();
+    
+    // Agrupar vendas por data ou criar dados de exemplo
+    graficoVendasInstancia = new Chart(ctxVendas, {
+      type: 'line',
+      data: {
+        labels: db.vendas.map(v => v.data || 'Registo'),
+        datasets: [{
+          label: 'Faturamento (€)',
+          data: db.vendas.map(v => v.total || 0),
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
 
-      <!-- Seção: Produtos -->
-      <section id="produtos">
-        <div class="box">
-          <h2 id="tituloFormProd">Novo Produto</h2>
-          <form id="fProd">
-            <label>Nome do Produto:
-              <input type="text" id="prNome" required>
-            </label>
-            <label>Tipo / Categoria:
-              <input type="text" id="prTipo">
-            </label>
-            <label>Preço Físico:
-              <input type="number" step="0.01" id="prPreco" required>
-            </label>
-            <label>Preço Online:
-              <input type="number" step="0.01" id="prPrecoOnline">
-            </label>
-            <label>Stock Mínimo:
-              <input type="number" id="prMinimo" value="2">
-            </label>
-            
-            <!-- Campo de Estoque Inicial integrado -->
-            <label>Estoque Inicial:
-              <input type="number" id="prEstoque" min="0" value="0" required>
-            </label>
-            
-            <label style="flex-direction:row; align-items:center; gap:8px;">
-              <input type="checkbox" id="prUnica"> Peça Única
-            </label>
-            
-            <div style="grid-column: 1 / -1; display:flex; gap:10px; margin-top:10px;">
-              <button type="submit" class="btn" id="btnSalvarProd">Salvar produto</button>
-              <button type="button" class="btn sec" id="btnCancelarProd" style="display:none;">Cancelar</button>
-            </div>
-          </form>
-        </div>
+  // Gráfico de Top Produtos
+  const ctxProdutos = $('graficoProdutos');
+  if (ctxProdutos) {
+    if (graficoProdutosInstancia) graficoProdutosInstancia.destroy();
 
-        <div class="box">
-          <h2>Lista de Produtos</h2>
-          <div class="bar">
-            <label>Pesquisar: <input type="text" id="filtroProdNome" placeholder="Nome do mineral..."></label>
-          </div>
-          <div class="tw">
-            <table>
-              <thead>
-                <tr>
-                  <th>Foto</th>
-                  <th>Nome</th>
-                  <th>Tipo</th>
-                  <th class="n">Preço Físico</th>
-                  <th class="n">Preço Online</th>
-                  <th class="n">Estoque</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaProdutos">
-                <tr><td colspan="7" class="vazio">Nenhum produto cadastrado.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+    graficoProdutosInstancia = new Chart(ctxProdutos, {
+      type: 'bar',
+      data: {
+        labels: db.produtos.slice(0, 5).map(p => p.nome),
+        datasets: [{
+          label: 'Estoque Atual',
+          data: db.produtos.slice(0, 5).map(p => p.estoque),
+          backgroundColor: '#10b981'
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+}
 
-      <!-- Demais Seções do Sistema -->
-      <section id="vendas"><div class="box"><h2>Registar Venda</h2></div></section>
-      <section id="compras"><div class="box"><h2>Registar Compra</h2></div></section>
-      <section id="despesas"><div class="box"><h2>Registar Despesa</h2></div></section>
-      <section id="clientes"><div class="box"><h2>Gestão de Clientes</h2></div></section>
-      <section id="fornecedores"><div class="box"><h2>Gestão de Fornecedores</h2></div></section>
-      <section id="reservas"><div class="box"><h2>Gestão de Reservas</h2></div></section>
-      <section id="perdas"><div class="box"><h2>Registo de Perdas</h2></div></section>
-      
-      <!-- Seção: Relatórios e Backup -->
-      <section id="relatorios">
-        <div class="box">
-          <h2>Relatório e Sincronização de Dados</h2>
-          <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
-            <button class="btn" onclick="baixarBackup()">Baixar backup</button>
-            <label class="btn sec" style="cursor:pointer; margin:0; display:inline-flex; align-items:center;">
-              Restaurar backup <input type="file" id="inputBackup" style="display:none" onchange="restaurarBackup(event)">
-            </label>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
+// ==========================================
+// 3. BACKUP E RESTAURAÇÃO
+// ==========================================
+function baixarBackup() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+  const downloadAnchor = document.createElement('a');
+  const dataAtual = new Date().toISOString().split('T')[0];
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `backup-npg-pedras-${dataAtual}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
 
-  <!-- Script JavaScript Principal -->
-  <script src="app.js"></script>
-</body>
-</html>
+function restaurarBackup(event) {
+  const arquivo = event.target.files[0];
+  if (!arquivo) return;
+
+  const leitor = new FileReader();
+  leitor.onload = function(e) {
+    try {
+      const dadosRestaurados = JSON.parse(e.target.result);
+      if (dadosRestaurados && dadosRestaurados.produtos) {
+        db = dadosRestaurados;
+        salvarDB();
+        atualizarTabelaProdutos();
+        alert('Backup restaurado com sucesso!');
+        location.reload();
+      } else {
+        alert('O arquivo selecionado não é um formato de backup válido.');
+      }
+    } catch (erro) {
+      alert('Erro ao ler o arquivo de backup.');
+    }
+  };
+  leitor.readAsText(arquivo);
+}
+
+// Inicialização Global
+window.addEventListener('DOMContentLoaded', () => {
+  atualizarTabelaProdutos();
+  atualizarDashboard();
+});

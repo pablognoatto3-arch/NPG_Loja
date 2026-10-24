@@ -712,6 +712,7 @@ $('fProd').onsubmit=e=>{e.preventDefault();
   const precoOnline=+$('prPrecoOnline').value||0;
   const minimo=+$('prMinimo').value||0;
   const unica=$('prUnica').checked;
+  const estoque = +$('prEstoque').value||0;
 
   if(editProdId){
     const p=db.produtos.find(x=>x.id===editProdId);

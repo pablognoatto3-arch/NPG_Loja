@@ -1,287 +1,210 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Controle da Loja de Pedras</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+:root {
+  --ink: #1e293b;
+  --muted: #64748b;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --line: #e2e8f0;
+  --primaria: #2563eb;
+  --citrino: #d97706;
+  --verde: #10b981;
+  --vermelho: #ef4444;
+  --alerta: #f59e0b;
+  --rodocrosita: #ec4899;
+  --sidebar-width: 240px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f8fafc;
+    --muted: #94a3b8;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --line: #334155;
+    --primaria: #3b82f6;
+    --citrino: #f59e0b;
+    --verde: #34d399;
+    --vermelho: #f87171;
+    --alerta: #fbbf24;
+    --rodocrosita: #f472b6;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;display:flex;min-height:100vh}
 
-<aside id="sidebar">
-  <div class="sidebar-header">
-    <h2>Loja de Pedras</h2>
-    <p>Painel de Gestão</p>
-  </div>
-  <button class="sidebar-toggle" id="btnToggleSidebar" type="button" title="Recolher / Expandir Menu">⬅ Recolher</button>
-  <nav id="tabs">
-    <button data-t="painel" class="on">📊 <span class="nav-text">Painel</span></button>
-    <button data-t="produtos">💎 <span class="nav-text">Produtos</span></button>
-    <button data-t="compras">🛒 <span class="nav-text">Compras</span></button>
-    <button data-t="vendas">💰 <span class="nav-text">Vendas</span></button>
-    <button data-t="reservas">📌 <span class="nav-text">Reservas</span></button>
-    <button data-t="perdas">⚠️ <span class="nav-text">Perdas/Avarias</span></button>
-    <button data-t="clientes">👥 <span class="nav-text">Clientes</span></button>
-    <button data-t="fornecedores">🏭 <span class="nav-text">Fornecedores</span></button>
-    <button data-t="despesas">💸 <span class="nav-text">Despesas</span></button>
-    <button data-t="contas">📅 <span class="nav-text">A receber/pagar</span></button>
-    <button data-t="relatorio">📑 <span class="nav-text">Relatório / DRE</span></button>
-  </nav>
-</aside>
+/* Menu Lateral */
+aside{width:var(--sidebar-width);background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;transition:all 0.3s ease;position:fixed;top:0;bottom:0;z-index:100;overflow-y:auto}
+aside.recolhido{--sidebar-width:70px}
+aside.recolhido .nav-text, aside.recolhido .sidebar-header h2, aside.recolhido .sidebar-header p{display:none}
+aside.recolhido .sidebar-header{padding:16px 10px;text-align:center}
 
-<div class="main-wrapper">
-  <header>
-    <h1>Controle da Loja de Pedras</h1>
-    <p>Gestão completa de estoque, vendas físicas/online, perdas, fornecedores e relatórios financeiros.</p>
-  </header>
-  <main>
+.sidebar-header{padding:20px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.sidebar-header h2{font:700 18px Fraunces,Georgia,serif;margin:0;color:var(--primaria);white-space:nowrap;overflow:hidden}
+.sidebar-header p{margin:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden}
 
-<section id="painel" class="on">
-  <div class="bar">
-    <label>De<input type="date" id="pDe"></label>
-    <label>Até<input type="date" id="pAte"></label>
-    <button class="btn sec" id="pLimpa" type="button">Todo o período</button>
-  </div>
+.sidebar-toggle{background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin:10px 14px;font-weight:600;text-align:center}
+
+nav{display:flex;flex-direction:column;gap:4px;padding:10px}
+nav button{background:none;border:0;border-left:4px solid transparent;padding:10px 14px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;border-radius:0 6px 6px 0;white-space:nowrap;overflow:hidden}
+nav button:hover{background:var(--bg);color:var(--primaria)}
+nav button.on{color:var(--primaria);border-color:var(--primaria);background:var(--bg)}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--primaria);outline-offset:2px}
+
+/* Estrutura Principal */
+.main-wrapper{margin-left:var(--sidebar-width);flex:1;transition:margin-left 0.3s ease;display:flex;flex-direction:column;min-width:0}
+header{padding:28px 24px 0;max-width:1100px;margin:0 auto;width:100%}
+h1{font:700 30px/1.15 Fraunces,Georgia,serif;margin:0 0 4px;color:var(--primaria)}
+header p{margin:0;color:var(--muted)}
+
+main{max-width:1100px;margin:0 auto;padding:24px;width:100%}
+section{display:none}section.on{display:block}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.stat span{display:block;color:var(--muted);font-size:14px}
+.stat b{font:700 22px Fraunces,Georgia,serif}
+.stat small{display:block;font-size:13px;color:var(--muted)}
+.stat.lucro{background:var(--primaria);border-color:var(--primaria)}
+.stat.lucro span,.stat.lucro b{color:#fff}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.box h2{font:600 18px Fraunces,Georgia,serif;margin:0;color:var(--ink)}
+.chart{position:relative;height:280px}
+
+/* Formulários */
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end}
+label{display:flex;flex-direction:column;font-size:14px;color:var(--muted);gap:4px}
+input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%}
+input:disabled,select:disabled{opacity:.5}
+
+.btn{font:inherit;font-weight:600;padding:10px 16px;border-radius:6px;border:1px solid var(--primaria);background:var(--primaria);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.sec{background:transparent;color:var(--primaria)}
+.btn.x{padding:4px 10px;border-color:var(--line);background:transparent;color:var(--vermelho);font-weight:500}
+.btn.ok{color:var(--verde);border-color:var(--verde)}
+.btn.rec{color:var(--citrino);border-color:var(--citrino);background:transparent}
+
+/* Tabelas e Envolventes com Rolagem Suave */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+th,td{padding:10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+th{font-weight:600;color:var(--muted);font-size:13px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--verde);font-weight:600}.neg{color:var(--vermelho);font-weight:600}
+.vazio{color:var(--muted);padding:14px 0}
+
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:16px}
+.bar label{min-width:140px;flex:1}
+
+.baixo{color:var(--vermelho);font-weight:600}
+.alerta{color:var(--alerta);font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600}
+.badge-unica{background:rgba(236,72,153,0.15);color:var(--rodocrosita)}
+.badge-baixo{background:rgba(245,158,11,0.15);color:var(--alerta)}
+.badge-esgotado{background:rgba(239,68,68,0.15);color:var(--vermelho)}
+.badge-reserva{background:rgba(37,99,235,0.15);color:var(--primaria)}
+.badge-fisica{background:rgba(16,185,129,0.15);color:var(--verde)}
+.badge-online{background:rgba(217,119,6,0.15);color:var(--citrino)}
+
+.thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line);display:block}
+.sem{width:44px;height:44px;border:1px dashed var(--muted);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);text-align:center;line-height:1.1;cursor:pointer}
+.mini{width:28px;height:28px;object-fit:cover;border-radius:5px;vertical-align:middle;margin-right:6px}
+.prev{width:48px;height:48px;object-fit:cover;border-radius:6px;display:none}
+.drop-zone{border:2px dashed var(--line);border-radius:6px;padding:8px;text-align:center;cursor:pointer;background:var(--bg);font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px}
+.drop-zone:hover{border-color:var(--primaria)}
+
+.progress-bar-container{background:var(--line);border-radius:10px;height:16px;width:100%;overflow:hidden;margin-top:8px}
+.progress-bar-fill{background:var(--verde);height:100%;width:0%;transition:width 0.4s ease}
+
+/* Modal e Recibo */
+.modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.recibo-card{background:#fff;color:#111;width:100%;max-width:420px;border-radius:12px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.3);font-family:monospace,sans-serif}
+.recibo-header{text-align:center;border-bottom:2px dashed #ccc;padding-bottom:12px;margin-bottom:12px}
+.recibo-header h3{margin:0;font-size:20px;font-family:serif;color:#1e293b}
+.recibo-line{display:flex;justify-content:space-between;margin:6px 0}
+.recibo-total{border-top:2px dashed #ccc;margin-top:12px;padding-top:12px;font-weight:bold;font-size:18px}
+.recibo-actions{display:flex;gap:10px;margin-top:20px}
+.recibo-actions button{flex:1}
+
+/* REGRAS ESPECÍFICAS PARA TELEMÓVEL / SMARTPHONE (Telas < 768px) */
+@media (max-width: 768px) {
+  aside {
+    --sidebar-width: 60px;
+  }
+  aside .nav-text, aside .sidebar-header h2, aside .sidebar-header p {
+    display: none;
+  }
+  aside .sidebar-header {
+    padding: 12px 6px;
+    text-align: center;
+  }
+  .sidebar-toggle {
+    display: none; /* Esconde o botão de expandir no telemóvel para poupar espaço */
+  }
   
-  <div class="box" style="margin-bottom:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <h2>Meta de Vendas do Mês Atual</h2>
-      <div style="display:flex;align-items:center;gap:6px">
-        <label style="flex-direction:row;align-items:center;gap:6px;margin:0">Meta R$: <input type="number" id="inputMeta" style="width:120px;padding:4px 8px" value="5000"></label>
-      </div>
-    </div>
-    <div id="metaTexto" style="font-size:14px;color:var(--muted);margin-top:6px">Carregando meta...</div>
-    <div class="progress-bar-container">
-      <div class="progress-bar-fill" id="metaBarra"></div>
-    </div>
-  </div>
+  .main-wrapper {
+    margin-left: 60px;
+  }
+  
+  header {
+    padding: 16px 14px 0;
+  }
+  h1 {
+    font-size: 22px;
+  }
+  
+  main {
+    padding: 14px;
+  }
+  
+  .stats {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .stat {
+    padding: 12px;
+  }
+  .stat b {
+    font-size: 18px;
+  }
+  .stat span {
+    font-size: 12px;
+  }
+  
+  .box {
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .box h2 {
+    font-size: 16px;
+  }
+  
+  form {
+    grid-template-columns: 1fr; /* Formulários ficam em coluna única no telemóvel */
+  }
+  
+  .bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bar label {
+    width: 100%;
+  }
+  .bar .btn {
+    width: 100%;
+  }
+  
+  /* Garante que tabelas fiquem perfeitamente navegáveis com deslize de dedo */
+  .tw {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+}
 
-  <div class="stats" id="stats"></div>
-  <div class="stats" id="stats2"></div>
-
-  <div class="grid2">
-    <div class="box"><h2>Top Produtos Mais Vendidos</h2><div class="tw" id="tRankingPainel"></div></div>
-    <div class="box"><h2>Próximos Vencimentos / Parcelas</h2><div class="tw" id="tProx"></div></div>
-  </div>
-
-  <div class="grid2">
-    <div class="box"><h2>Movimentação Financeira Mensal</h2><div class="chart"><canvas id="cMes"></canvas></div></div>
-    <div class="box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">
-        <h2>Lucro Bruto por Produto</h2>
-        <select id="pFiltroProduto" style="width:auto;min-width:180px"><option value="">Todos os produtos</option></select>
-      </div>
-      <div class="chart"><canvas id="cLucro"></canvas></div>
-    </div>
-    <div class="box"><h2>Vendas por Forma de Pagamento</h2><div class="chart"><canvas id="cForma"></canvas></div></div>
-    <div class="box"><h2>Vendas por Canal (Física vs Online)</h2><div class="chart"><canvas id="cCanal"></canvas></div></div>
-  </div>
-</section>
-
-<section id="produtos">
-  <div class="box">
-    <h2 id="tituloFormProd">Novo Produto</h2>
-    <form id="fProd">
-      <label>Nome<input id="prNome" required placeholder="Ex.: Drusa de Ametista M"></label>
-      <label>Tipo / Mineral<input id="prTipo" placeholder="Ex.: Ametista"></label>
-      <label>Preço Loja Física (R$)<input id="prPreco" type="number" step="0.01" min="0" placeholder="Ex.: 50.00"></label>
-      <label>Preço Loja Online (R$)<input id="prPrecoOnline" type="number" step="0.01" min="0" placeholder="Ex.: 60.00"></label>
-      <label>Estoque Mínimo<input id="prMinimo" type="number" min="0" value="2"></label>
-      <label style="flex-direction:row;align-items:center;gap:8px;grid-column:span 2;cursor:pointer;margin-top:20px">
-        <input type="checkbox" id="prUnica" style="width:auto">
-        <span><strong>Peça Única / Exclusiva</strong> (Esgota automaticamente ao vender)</span>
-      </label>
-      <label style="grid-column:1/-1">Foto da Mercadoria (Cole Ctrl+V ou escolha)
-        <div class="drop-zone" id="dzProd">
-          <span id="dzText">Clique para selecionar ou cole (Ctrl+V)</span>
-          <img id="prPrev" class="prev" alt="Prévia">
-        </div>
-        <input id="prFoto" type="file" accept="image/*" style="display:none">
-      </label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarProd" type="submit">Salvar produto</button>
-        <button class="btn sec" id="btnCancelarProd" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Estoque Atual</h2><div class="tw" id="tProd"></div></div>
-</section>
-
-<section id="compras">
-  <div class="box">
-    <h2 id="tituloFormCompra">Registrar Compra</h2>
-    <form id="fCompra">
-      <label>Data<input type="date" id="coData" required></label>
-      <label>Produto<select id="coProd" required></select></label>
-      <label>Quantidade<input type="number" id="coQtd" min="1" step="1" required></label>
-      <label>Preço de Compra Unitário (R$)<input type="number" id="coCusto" step="0.01" min="0" required></label>
-      <label>Fornecedor<select id="coFornSelect"><option value="">Novo / Outro</option></select></label>
-      <label>Nome Fornecedor (Manual)<input id="coForn" placeholder="Ex.: Mineração Ouro Verde"></label>
-      <label>Forma de Pagamento<select id="coForma"></select></label>
-      <label>Parcelas<select id="coParc"></select></label>
-      <label>Vencimento 1ª Parcela<input type="date" id="coVenc"></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarCompra" type="submit">Salvar compra</button>
-        <button class="btn sec" id="btnCancelarCompra" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Histórico de Compras e Variação de Custo</h2><div class="tw" id="tCompra"></div></div>
-</section>
-
-<section id="vendas">
-  <div class="box">
-    <h2 id="tituloFormVenda">Registrar Venda</h2>
-    <form id="fVenda">
-      <label>Data<input type="date" id="veData" required></label>
-      <label>Canal de Venda
-        <select id="veCanal">
-          <option value="Física">Loja Física</option>
-          <option value="Online">Loja Online / E-commerce</option>
-        </select>
-      </label>
-      <label>Produto<select id="veProd" required></select></label>
-      <label>Quantidade<input type="number" id="veQtd" min="1" step="1" required></label>
-      <label>Preço Unitário (R$)<input type="number" id="vePreco" step="0.01" min="0" required></label>
-      <label>Cliente<input id="veCli" placeholder="Nome do cliente"></label>
-      <label>Taxa de Cartão (%)<input type="number" id="veTaxa" step="0.01" min="0" value="0" placeholder="Ex.: 3.5"></label>
-      <label>Forma de Pagamento<select id="veForma"></select></label>
-      <label>Parcelas<select id="veParc"></select></label>
-      <label>Vencimento 1ª Parcela<input type="date" id="veVenc"></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarVenda" type="submit">Salvar venda</button>
-        <button class="btn sec" id="btnCancelarVenda" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Histórico de Vendas</h2><div class="tw" id="tVenda"></div></div>
-</section>
-
-<section id="reservas">
-  <div class="box">
-    <h2 id="tituloFormReserva">Registrar Reserva com Sinal</h2>
-    <form id="fReserva">
-      <label>Data da Reserva<input type="date" id="reData" required></label>
-      <label>Produto<select id="reProd" required></select></label>
-      <label>Cliente<input id="reCli" required placeholder="Nome do cliente"></label>
-      <label>Valor Total do Item (R$)<input type="number" id="reTotal" step="0.01" min="0" required></label>
-      <label>Sinal / Entrada Paga (R$)<input type="number" id="reSinal" step="0.01" min="0" required></label>
-      <label>Status<select id="reStatus"><option value="Ativa">Ativa / Aguardando Retirada</option><option value="Concluída">Concluída (Venda Finalizada)</option><option value="Cancelada">Cancelada</option></select></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarReserva" type="submit">Salvar reserva</button>
-        <button class="btn sec" id="btnCancelarReserva" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Painel de Reservas</h2><div class="tw" id="tReserva"></div></div>
-</section>
-
-<section id="perdas">
-  <div class="box">
-    <h2 id="tituloFormPerda">Registrar Perda / Avaria</h2>
-    <form id="fPerda">
-      <label>Data<input type="date" id="peData" required></label>
-      <label>Produto<select id="peProd" required></select></label>
-      <label>Quantidade Avariada<input type="number" id="peQtd" min="1" step="1" required></label>
-      <label>Motivo / Observação<input id="peMotivo" required placeholder="Ex.: Quebrou durante o transporte, trincada"></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarPerda" type="submit">Registrar baixa no estoque</button>
-        <button class="btn sec" id="btnCancelarPerda" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Histórico de Perdas e Avarias</h2><div class="tw" id="tPerda"></div></div>
-</section>
-
-<section id="clientes">
-  <div class="box">
-    <h2 id="tituloFormCliente">Cadastrar / Editar Cliente</h2>
-    <form id="fCliente">
-      <label>Nome do Cliente<input id="cliNome" required placeholder="Ex.: Maria Silva"></label>
-      <label>Telefone / WhatsApp<input id="cliTel" placeholder="(00) 00000-0000"></label>
-      <label>Preferências de Pedras / Anotações<input id="cliNotas" placeholder="Ex.: Prefere pedras brutas e ametistas"></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarCliente" type="submit">Salvar cliente</button>
-        <button class="btn sec" id="btnCancelarCliente" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Base de Clientes e Histórico</h2><div class="tw" id="tCliente"></div></div>
-</section>
-
-<section id="fornecedores">
-  <div class="box">
-    <h2 id="tituloFormFornecedor">Cadastrar / Editar Fornecedor</h2>
-    <form id="fFornecedor">
-      <label>Empresa / Nome<input id="forNome" required placeholder="Ex.: Pedras e Minerais Brasil"></label>
-      <label>Contato / Telefone<input id="forTel" placeholder="(00) 00000-0000"></label>
-      <label>Principais Produtos / Tipos de Pedras<input id="forNotas" placeholder="Ex.: Especialista em geodos de quartzos"></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarFornecedor" type="submit">Salvar fornecedor</button>
-        <button class="btn sec" id="btnCancelarFornecedor" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Lista de Fornecedores</h2><div class="tw" id="tFornecedor"></div></div>
-</section>
-
-<section id="despesas">
-  <div class="box">
-    <h2 id="tituloFormDespesa">Registrar Despesa Operacional</h2>
-    <form id="fDespesa">
-      <label>Data<input type="date" id="deData" required></label>
-      <label>Descrição / Categoria<input id="deDesc" required placeholder="Ex.: Embalagens, Frete, Luz"></label>
-      <label>Valor (R$)<input type="number" id="deValor" step="0.01" min="0.01" required></label>
-      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-        <button class="btn" id="btnSalvarDespesa" type="submit">Salvar despesa</button>
-        <button class="btn sec" id="btnCancelarDespesa" type="button" style="display:none">Cancelar</button>
-      </div>
-    </form>
-  </div>
-  <div class="box"><h2>Histórico de Despesas Operacionais</h2><div class="tw" id="tDespesa"></div></div>
-</section>
-
-<section id="contas">
-  <div class="bar"><label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="ckPagas" style="width:auto"> Mostrar parcelas já pagas</label></div>
-  <div class="box"><h2>A Receber (Vendas)</h2><div class="tw" id="tReceber"></div></div>
-  <div class="box"><h2>A Pagar (Compras)</h2><div class="tw" id="tPagar"></div></div>
-</section>
-
-<section id="relatorio">
-  <div class="bar">
-    <label>De<input type="date" id="rDe"></label>
-    <label>Até<input type="date" id="rAte"></label>
-    <button class="btn sec" id="rLimpa" type="button">Todo o período</button>
-    <button class="btn" id="bExcel" type="button">Exportar para Excel</button>
-    <button class="btn sec" id="bBackup" type="button">Baixar backup</button>
-    <label class="btn sec" style="flex-direction:row;cursor:pointer">Restaurar backup<input type="file" id="bRest" accept=".json" hidden></label>
-  </div>
-  <div class="box">
-    <h2>Resumo por Produto e DRE do Negócio</h2>
-    <div class="tw" id="tRel"></div>
-  </div>
-</section>
-
-  </main>
-</div>
-
-<!-- Modal de Recibo -->
-<div class="modal-bg" id="modalRecibo">
-  <div class="recibo-card" id="reciboCard">
-    <div class="recibo-header">
-      <h3>LOJA DE PEDRAS</h3>
-      <p style="margin:4px 0 0;font-size:12px">Comprovante de Venda</p>
-    </div>
-    <div id="reciboConteudo"></div>
-    <div class="recibo-actions">
-      <button class="btn sec" type="button" onclick="fecharRecibo()">Fechar</button>
-      <button class="btn" type="button" onclick="window.print()">Imprimir</button>
-    </div>
-  </div>
-</div>
-
-<script src="app.js"></script>
-</body>
-</html>
+@media print{
+  aside,.sidebar-toggle{display:none}
+  .main-wrapper{margin-left:0}
+  body *{visibility:hidden}
+  .recibo-card,.recibo-card *{visibility:visible}
+  .recibo-card{position:absolute;left:0;top:0;width:100%;max-width:none;box-shadow:none;padding:0}
+  .recibo-actions{display:none}
+}

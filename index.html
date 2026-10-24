@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle da Loja de Pedras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <h2>Loja de Pedras</h2>
+    <p>Painel de Gestão</p>
+  </div>
+  <button class="sidebar-toggle" id="btnToggleSidebar" type="button" title="Recolher / Expandir Menu">⬅ Recolher</button>
+  <nav id="tabs">
+    <button data-t="painel" class="on">📊 <span class="nav-text">Painel</span></button>
+    <button data-t="produtos">💎 <span class="nav-text">Produtos</span></button>
+    <button data-t="compras">🛒 <span class="nav-text">Compras</span></button>
+    <button data-t="vendas">💰 <span class="nav-text">Vendas</span></button>
+    <button data-t="reservas">📌 <span class="nav-text">Reservas</span></button>
+    <button data-t="perdas">⚠️ <span class="nav-text">Perdas/Avarias</span></button>
+    <button data-t="clientes">👥 <span class="nav-text">Clientes</span></button>
+    <button data-t="fornecedores">🏭 <span class="nav-text">Fornecedores</span></button>
+    <button data-t="despesas">💸 <span class="nav-text">Despesas</span></button>
+    <button data-t="contas">📅 <span class="nav-text">A receber/pagar</span></button>
+    <button data-t="relatorio">📑 <span class="nav-text">Relatório / DRE</span></button>
+  </nav>
+</aside>
+
+<div class="main-wrapper">
+  <header>
+    <h1>Controle da Loja de Pedras</h1>
+    <p>Gestão completa de estoque, vendas físicas/online, perdas, fornecedores e relatórios financeiros.</p>
+  </header>
+  <main>
+
+<section id="painel" class="on">
+  <div class="bar">
+    <label>De<input type="date" id="pDe"></label>
+    <label>Até<input type="date" id="pAte"></label>
+    <button class="btn sec" id="pLimpa" type="button">Todo o período</button>
+  </div>
+  
+  <div class="box" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <h2>Meta de Vendas do Mês Atual</h2>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="flex-direction:row;align-items:center;gap:6px;margin:0">Meta R$: <input type="number" id="inputMeta" style="width:120px;padding:4px 8px" value="5000"></label>
+      </div>
+    </div>
+    <div id="metaTexto" style="font-size:14px;color:var(--muted);margin-top:6px">Carregando meta...</div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="metaBarra"></div>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div class="stats" id="stats2"></div>
+
+  <div class="grid2">
+    <div class="box"><h2>Top Produtos Mais Vendidos</h2><div class="tw" id="tRankingPainel"></div></div>
+    <div class="box"><h2>Próximos Vencimentos / Parcelas</h2><div class="tw" id="tProx"></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="box"><h2>Movimentação Financeira Mensal</h2><div class="chart"><canvas id="cMes"></canvas></div></div>
+    <div class="box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">
+        <h2>Lucro Bruto por Produto</h2>
+        <select id="pFiltroProduto" style="width:auto;min-width:180px"><option value="">Todos os produtos</option></select>
+      </div>
+      <div class="chart"><canvas id="cLucro"></canvas></div>
+    </div>
+    <div class="box"><h2>Vendas por Forma de Pagamento</h2><div class="chart"><canvas id="cForma"></canvas></div></div>
+    <div class="box"><h2>Vendas por Canal (Física vs Online)</h2><div class="chart"><canvas id="cCanal"></canvas></div></div>
+  </div>
+</section>
+
+<section id="produtos">
+  <div class="box">
+    <h2 id="tituloFormProd">Novo Produto</h2>
+    <form id="fProd">
+      <label>Nome<input id="prNome" required placeholder="Ex.: Drusa de Ametista M"></label>
+      <label>Tipo / Mineral<input id="prTipo" placeholder="Ex.: Ametista"></label>
+      <label>Preço Loja Física (R$)<input id="prPreco" type="number" step="0.01" min="0" placeholder="Ex.: 50.00"></label>
+      <label>Preço Loja Online (R$)<input id="prPrecoOnline" type="number" step="0.01" min="0" placeholder="Ex.: 60.00"></label>
+      <label>Estoque Mínimo<input id="prMinimo" type="number" min="0" value="2"></label>
+      <label style="flex-direction:row;align-items:center;gap:8px;grid-column:span 2;cursor:pointer;margin-top:20px">
+        <input type="checkbox" id="prUnica" style="width:auto">
+        <span><strong>Peça Única / Exclusiva</strong> (Esgota automaticamente ao vender)</span>
+      </label>
+      <label style="grid-column:1/-1">Foto da Mercadoria (Cole Ctrl+V ou escolha)
+        <div class="drop-zone" id="dzProd">
+          <span id="dzText">Clique para selecionar ou cole (Ctrl+V)</span>
+          <img id="prPrev" class="prev" alt="Prévia">
+        </div>
+        <input id="prFoto" type="file" accept="image/*" style="display:none">
+      </label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarProd" type="submit">Salvar produto</button>
+        <button class="btn sec" id="btnCancelarProd" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Estoque Atual</h2><div class="tw" id="tProd"></div></div>
+</section>
+
+<section id="compras">
+  <div class="box">
+    <h2 id="tituloFormCompra">Registrar Compra</h2>
+    <form id="fCompra">
+      <label>Data<input type="date" id="coData" required></label>
+      <label>Produto<select id="coProd" required></select></label>
+      <label>Quantidade<input type="number" id="coQtd" min="1" step="1" required></label>
+      <label>Preço de Compra Unitário (R$)<input type="number" id="coCusto" step="0.01" min="0" required></label>
+      <label>Fornecedor<select id="coFornSelect"><option value="">Novo / Outro</option></select></label>
+      <label>Nome Fornecedor (Manual)<input id="coForn" placeholder="Ex.: Mineração Ouro Verde"></label>
+      <label>Forma de Pagamento<select id="coForma"></select></label>
+      <label>Parcelas<select id="coParc"></select></label>
+      <label>Vencimento 1ª Parcela<input type="date" id="coVenc"></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarCompra" type="submit">Salvar compra</button>
+        <button class="btn sec" id="btnCancelarCompra" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Histórico de Compras e Variação de Custo</h2><div class="tw" id="tCompra"></div></div>
+</section>
+
+<section id="vendas">
+  <div class="box">
+    <h2 id="tituloFormVenda">Registrar Venda</h2>
+    <form id="fVenda">
+      <label>Data<input type="date" id="veData" required></label>
+      <label>Canal de Venda
+        <select id="veCanal">
+          <option value="Física">Loja Física</option>
+          <option value="Online">Loja Online / E-commerce</option>
+        </select>
+      </label>
+      <label>Produto<select id="veProd" required></select></label>
+      <label>Quantidade<input type="number" id="veQtd" min="1" step="1" required></label>
+      <label>Preço Unitário (R$)<input type="number" id="vePreco" step="0.01" min="0" required></label>
+      <label>Cliente<input id="veCli" placeholder="Nome do cliente"></label>
+      <label>Taxa de Cartão (%)<input type="number" id="veTaxa" step="0.01" min="0" value="0" placeholder="Ex.: 3.5"></label>
+      <label>Forma de Pagamento<select id="veForma"></select></label>
+      <label>Parcelas<select id="veParc"></select></label>
+      <label>Vencimento 1ª Parcela<input type="date" id="veVenc"></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarVenda" type="submit">Salvar venda</button>
+        <button class="btn sec" id="btnCancelarVenda" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Histórico de Vendas</h2><div class="tw" id="tVenda"></div></div>
+</section>
+
+<section id="reservas">
+  <div class="box">
+    <h2 id="tituloFormReserva">Registrar Reserva com Sinal</h2>
+    <form id="fReserva">
+      <label>Data da Reserva<input type="date" id="reData" required></label>
+      <label>Produto<select id="reProd" required></select></label>
+      <label>Cliente<input id="reCli" required placeholder="Nome do cliente"></label>
+      <label>Valor Total do Item (R$)<input type="number" id="reTotal" step="0.01" min="0" required></label>
+      <label>Sinal / Entrada Paga (R$)<input type="number" id="reSinal" step="0.01" min="0" required></label>
+      <label>Status<select id="reStatus"><option value="Ativa">Ativa / Aguardando Retirada</option><option value="Concluída">Concluída (Venda Finalizada)</option><option value="Cancelada">Cancelada</option></select></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarReserva" type="submit">Salvar reserva</button>
+        <button class="btn sec" id="btnCancelarReserva" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Painel de Reservas</h2><div class="tw" id="tReserva"></div></div>
+</section>
+
+<section id="perdas">
+  <div class="box">
+    <h2 id="tituloFormPerda">Registrar Perda / Avaria</h2>
+    <form id="fPerda">
+      <label>Data<input type="date" id="peData" required></label>
+      <label>Produto<select id="peProd" required></select></label>
+      <label>Quantidade Avariada<input type="number" id="peQtd" min="1" step="1" required></label>
+      <label>Motivo / Observação<input id="peMotivo" required placeholder="Ex.: Quebrou durante o transporte, trincada"></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarPerda" type="submit">Registrar baixa no estoque</button>
+        <button class="btn sec" id="btnCancelarPerda" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Histórico de Perdas e Avarias</h2><div class="tw" id="tPerda"></div></div>
+</section>
+
+<section id="clientes">
+  <div class="box">
+    <h2 id="tituloFormCliente">Cadastrar / Editar Cliente</h2>
+    <form id="fCliente">
+      <label>Nome do Cliente<input id="cliNome" required placeholder="Ex.: Maria Silva"></label>
+      <label>Telefone / WhatsApp<input id="cliTel" placeholder="(00) 00000-0000"></label>
+      <label>Preferências de Pedras / Anotações<input id="cliNotas" placeholder="Ex.: Prefere pedras brutas e ametistas"></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarCliente" type="submit">Salvar cliente</button>
+        <button class="btn sec" id="btnCancelarCliente" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Base de Clientes e Histórico</h2><div class="tw" id="tCliente"></div></div>
+</section>
+
+<section id="fornecedores">
+  <div class="box">
+    <h2 id="tituloFormFornecedor">Cadastrar / Editar Fornecedor</h2>
+    <form id="fFornecedor">
+      <label>Empresa / Nome<input id="forNome" required placeholder="Ex.: Pedras e Minerais Brasil"></label>
+      <label>Contato / Telefone<input id="forTel" placeholder="(00) 00000-0000"></label>
+      <label>Principais Produtos / Tipos de Pedras<input id="forNotas" placeholder="Ex.: Especialista em geodos de quartzos"></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarFornecedor" type="submit">Salvar fornecedor</button>
+        <button class="btn sec" id="btnCancelarFornecedor" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Lista de Fornecedores</h2><div class="tw" id="tFornecedor"></div></div>
+</section>
+
+<section id="despesas">
+  <div class="box">
+    <h2 id="tituloFormDespesa">Registrar Despesa Operacional</h2>
+    <form id="fDespesa">
+      <label>Data<input type="date" id="deData" required></label>
+      <label>Descrição / Categoria<input id="deDesc" required placeholder="Ex.: Embalagens, Frete, Luz"></label>
+      <label>Valor (R$)<input type="number" id="deValor" step="0.01" min="0.01" required></label>
+      <div style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+        <button class="btn" id="btnSalvarDespesa" type="submit">Salvar despesa</button>
+        <button class="btn sec" id="btnCancelarDespesa" type="button" style="display:none">Cancelar</button>
+      </div>
+    </form>
+  </div>
+  <div class="box"><h2>Histórico de Despesas Operacionais</h2><div class="tw" id="tDespesa"></div></div>
+</section>
+
+<section id="contas">
+  <div class="bar"><label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="ckPagas" style="width:auto"> Mostrar parcelas já pagas</label></div>
+  <div class="box"><h2>A Receber (Vendas)</h2><div class="tw" id="tReceber"></div></div>
+  <div class="box"><h2>A Pagar (Compras)</h2><div class="tw" id="tPagar"></div></div>
+</section>
+
+<section id="relatorio">
+  <div class="bar">
+    <label>De<input type="date" id="rDe"></label>
+    <label>Até<input type="date" id="rAte"></label>
+    <button class="btn sec" id="rLimpa" type="button">Todo o período</button>
+    <button class="btn" id="bExcel" type="button">Exportar para Excel</button>
+    <button class="btn sec" id="bBackup" type="button">Baixar backup</button>
+    <label class="btn sec" style="flex-direction:row;cursor:pointer">Restaurar backup<input type="file" id="bRest" accept=".json" hidden></label>
+  </div>
+  <div class="box">
+    <h2>Resumo por Produto e DRE do Negócio</h2>
+    <div class="tw" id="tRel"></div>
+  </div>
+</section>
+
+  </main>
+</div>
+
+<!-- Modal de Recibo -->
+<div class="modal-bg" id="modalRecibo">
+  <div class="recibo-card" id="reciboCard">
+    <div class="recibo-header">
+      <h3>LOJA DE PEDRAS</h3>
+      <p style="margin:4px 0 0;font-size:12px">Comprovante de Venda</p>
+    </div>
+    <div id="reciboConteudo"></div>
+    <div class="recibo-actions">
+      <button class="btn sec" type="button" onclick="fecharRecibo()">Fechar</button>
+      <button class="btn" type="button" onclick="window.print()">Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
